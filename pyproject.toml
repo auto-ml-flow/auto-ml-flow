@@ -7,6 +7,25 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+requests = "^2.31.0"
+tenacity = "^8.3.0"
+pydantic = "^2.7.1"
+loguru = "^0.7.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+requests-mock = "^1.12.1"
+ipykernel = "^6.29.4"
+
+[tool.poetry.group.for_example.dependencies]
+numpy = "^1.26.4"
+optuna = "^3.6.1"
+pandas = "^2.2.2"
+xgboost = "^2.0.3"
+scikit-learn = "^1.4.2"
+matplotlib = "^3.8.4"
+seaborn = "^0.13.2"
+mlflow = "^2.12.2"
 
 [build-system]
 requires = ["poetry-core"]
