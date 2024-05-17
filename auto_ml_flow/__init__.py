@@ -61,7 +61,7 @@ class AutoMLFlow:
         system = create_system(
             CreateSystemPayload(run=run.id, **system_info.model_dump()), cls._client
         )
-        monitor = SystemMetricsMonitor(system=system.id, client=cls._client)
+        monitor = SystemMetricsMonitor(system=system.id, client=cls._client, interval=0.5)
         monitor.start()
 
         try:

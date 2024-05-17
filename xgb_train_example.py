@@ -13,7 +13,7 @@ mpl.use("Agg")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="http://87.242.117.47:8811/")
+    parser = argparse.ArgumentParser(description="XGBoost example")
     parser.add_argument(
         "--learning-rate",
         type=float,
@@ -46,8 +46,8 @@ def main():
     dtrain = xgb.DMatrix(X_train, label=y_train)
     dtest = xgb.DMatrix(X_test, label=y_test)
 
-    AutoMLFlow.set_tracking_url("http://127.0.0.1:8000")
-    AutoMLFlow.start_experiment("My experiment for test")
+    AutoMLFlow.set_tracking_url("http://87.242.117.47:8811/")
+    AutoMLFlow.start_experiment("really many metrics")
     
     with AutoMLFlow.start_run(f"Test123"):
         # Train model and track evaluation metrics
@@ -67,7 +67,7 @@ def main():
             evals=[(dtrain, "train"), (dtest, "test")],
             evals_result=eval_results,  # Store evaluation results during training
         )
-        # sleep(30) # for metric collecting
+        sleep(60) # for metric collecting
         # Extract log loss values at each step from eval_results
         log_loss_values = eval_results["test"]["mlogloss"]
 
