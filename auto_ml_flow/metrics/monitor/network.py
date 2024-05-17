@@ -2,7 +2,7 @@ import psutil
 
 from auto_ml_flow.client.v1 import AutoMLFlowClient
 from auto_ml_flow.client.v1.models.metrics import NetworkMetricModel
-from auto_ml_flow.metrics.monitor.base import BaseMetricsMonitor
+from auto_ml_flow.metrics.monitor.base import BaseMetricsMonitor, bytes_to_megabytes
 
 
 class NetworkMonitor(BaseMetricsMonitor):
@@ -15,8 +15,8 @@ class NetworkMonitor(BaseMetricsMonitor):
         # system boot, so to set network usage metrics as 0 when we start logging, we need to keep
         # the initial network usage metrics.
         network_usage = psutil.net_io_counters()
-        self._initial_receive_megabytes = network_usage.bytes_recv / 1e6
-        self._initial_transmit_megabytes = network_usage.bytes_sent / 1e6
+        self._initial_receive_megabytes = bytes_to_megabytes(network_usage.bytes_recv)
+        self._initial_transmit_megabytes = bytes_to_megabytes(network_usage.bytes_sent)
 
     def collect_metrics(self) -> None:
         network_usage = psutil.net_io_counters()

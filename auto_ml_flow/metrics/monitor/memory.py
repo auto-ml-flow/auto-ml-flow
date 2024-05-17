@@ -2,13 +2,13 @@ import psutil
 
 from auto_ml_flow.client.v1 import AutoMLFlowClient
 from auto_ml_flow.client.v1.models.metrics import MemoryMetricModel
-from auto_ml_flow.metrics.monitor.base import BaseMetricsMonitor
+from auto_ml_flow.metrics.monitor.base import BaseMetricsMonitor, bytes_to_megabytes
 
 
 class MemoryMonitor(BaseMetricsMonitor):
     def collect_metrics(self) -> None:
         system_memory = psutil.virtual_memory()
-        self._metrics["system_memory_usage_megabytes"] = system_memory.used / 1e6
+        self._metrics["system_memory_usage_megabytes"] = bytes_to_megabytes(system_memory.used)
         self._metrics["system_memory_usage_percentage"] = (
             system_memory.used / system_memory.total * 100
         )

@@ -13,7 +13,7 @@ mpl.use("Agg")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="XGBoost example")
+    parser = argparse.ArgumentParser(description="http://87.242.117.47:8811/")
     parser.add_argument(
         "--learning-rate",
         type=float,
@@ -67,7 +67,7 @@ def main():
             evals=[(dtrain, "train"), (dtest, "test")],
             evals_result=eval_results,  # Store evaluation results during training
         )
-        sleep(30) # for metric collecting
+        # sleep(30) # for metric collecting
         # Extract log loss values at each step from eval_results
         log_loss_values = eval_results["test"]["mlogloss"]
 
