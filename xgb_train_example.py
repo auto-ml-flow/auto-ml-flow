@@ -1,4 +1,5 @@
 import argparse
+from time import sleep
 
 import matplotlib as mpl
 import xgboost as xgb
@@ -45,44 +46,44 @@ def main():
     dtrain = xgb.DMatrix(X_train, label=y_train)
     dtest = xgb.DMatrix(X_test, label=y_test)
 
-    AutoMLFlow.set_tracking_url("http://87.242.117.47:8811")
+    AutoMLFlow.set_tracking_url("http://127.0.0.1:8000")
+    AutoMLFlow.start_experiment("My experiment for test")
     
-    with AutoMLFlow.experiment_manager("My experiment for test") as experiment:
-        with AutoMLFlow.run_manager(experiment, description=f"Some shit happens here???"):
-            # Train model and track evaluation metrics
-            params = {
-                "objective": "multi:softprob",
-                "num_class": 3,
-                "learning_rate": args.learning_rate,
-                "eval_metric": "mlogloss",
-                "colsample_bytree": args.colsample_bytree,
-                "subsample": args.subsample,
-                "seed": 42,
-            }
-            eval_results = {} # Dictionary to store evaluation results
-            model = xgb.train(
-                params,
-                dtrain,
-                evals=[(dtrain, "train"), (dtest, "test")],
-                evals_result=eval_results,  # Store evaluation results during training
-            )
+    with AutoMLFlow.start_run(f"Test123"):
+        # Train model and track evaluation metrics
+        params = {
+            "objective": "multi:softprob",
+            "num_class": 3,
+            "learning_rate": args.learning_rate,
+            "eval_metric": "mlogloss",
+            "colsample_bytree": args.colsample_bytree,
+            "subsample": args.subsample,
+            "seed": 42,
+        }
+        eval_results = {} # Dictionary to store evaluation results
+        model = xgb.train(
+            params,
+            dtrain,
+            evals=[(dtrain, "train"), (dtest, "test")],
+            evals_result=eval_results,  # Store evaluation results during training
+        )
+        sleep(30) # for metric collecting
+        # Extract log loss values at each step from eval_results
+        log_loss_values = eval_results["test"]["mlogloss"]
 
-            # Extract log loss values at each step from eval_results
-            log_loss_values = eval_results["test"]["mlogloss"]
+        # Log log loss at each step
+        for loss in log_loss_values:
+            AutoMLFlow.log_metric("log_loss", float(loss))
 
-            # Log log loss at each step
-            for loss in log_loss_values:
-                AutoMLFlow.log_metric("log_loss", float(loss))
+        # Predict on the test set
+        y_proba = model.predict(dtest)
+        y_pred = y_proba.argmax(axis=1)
+        loss = log_loss(y_test, y_proba)
+        acc = accuracy_score(y_test, y_pred)
 
-            # Predict on the test set
-            y_proba = model.predict(dtest)
-            y_pred = y_proba.argmax(axis=1)
-            loss = log_loss(y_test, y_proba)
-            acc = accuracy_score(y_test, y_pred)
-
-            # Add final evaluation metrics to the run
-            AutoMLFlow.log_metric("log_loss", loss)
-            AutoMLFlow.log_metric("accuracy", acc)
+        # Add final evaluation metrics to the run
+        AutoMLFlow.log_metric("log_loss", loss)
+        AutoMLFlow.log_metric("accuracy", acc)
 
 
 if __name__ == "__main__":

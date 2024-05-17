@@ -1,5 +1,4 @@
 import traceback
-import uuid
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Generator
@@ -10,50 +9,60 @@ from auto_ml_flow.client.v1 import AutoMLFlowClient
 from auto_ml_flow.client.v1.consts import Status
 from auto_ml_flow.client.v1.models.experiments import ExperimentModel
 from auto_ml_flow.client.v1.models.runs import RunModel
-from auto_ml_flow.handlers.experiment import create_experiment, get_experiment_by
+from auto_ml_flow.client.v1.models.systems import CreateSystemPayload
+from auto_ml_flow.handlers.experiment import get_or_create_experiment
 from auto_ml_flow.handlers.run import run_ended, run_started
 from auto_ml_flow.handlers.run_metric import add_metric_to
+from auto_ml_flow.handlers.system import create_system
+from auto_ml_flow.metrics.monitor import SystemMetricsMonitor
+from auto_ml_flow.metrics.system import get_system
 
 
 class AutoMLFlow:
     _client: AutoMLFlowClient | None = None
     _latest_run: RunModel | None = None
+    _experiment: ExperimentModel | None = None
 
     @classmethod
     def set_tracking_url(cls, url: str) -> None:
         cls._client = AutoMLFlowClient(base_url=url)
 
     @classmethod
-    @contextmanager
-    def experiment_manager(cls, name: str) -> Generator[ExperimentModel, Any, None]:
+    def start_experiment(cls, name: str) -> None:
         if cls._client is None:
             raise ValueError("Tracking URL is not set. Use 'set_tracking_url' method to set it.")
 
-        experiment = None
-        try:
-            name = name or str(uuid.uuid4())
-
-            experiment = get_experiment_by(name, cls._client)
-
-            yield experiment
-        except Exception as e:  # noqa: BLE001
-            logger.warning(f"Experiment retrieval failed: {e}")
-
-            yield create_experiment(name, cls._client)
+        cls._experiment = get_or_create_experiment(name, cls._client)
 
     @classmethod
     @contextmanager
-    def run_manager(
-        cls, experiment: ExperimentModel, description: str
-    ) -> Generator[Any, Any, None]:
+    def start_run(cls, description: str) -> Generator[Any, Any, None]:
         if cls._client is None:
             raise ValueError("Tracking URL is not set. Use 'set_tracking_url' method to set it.")
 
-        run = run_started(client=cls._client, experiment_id=experiment.id, description=description)
+        if cls._experiment is None:
+            raise ValueError(
+                "Experiment not started."
+                "Start experiment with 'AutoMLFlow.start_experiment(\"My experiment for test\")'"
+            )
+
+        system_info = get_system()  # before run creation because it pretty hard task
+        run = run_started(
+            client=cls._client, experiment_id=cls._experiment.id, description=description
+        )
         start_time = datetime.now()
-        logger.debug(f"New {run.id=} for experiment {experiment.name} (id={experiment.id}) created")
+
+        logger.debug(
+            f"New {run.id=} for experiment {cls._experiment.name} (id={cls._experiment.id}) created"
+        )
 
         cls._latest_run = run
+
+        system = create_system(
+            CreateSystemPayload(run=run.id, **system_info.model_dump()), cls._client
+        )
+        monitor = SystemMetricsMonitor(system=system.id, client=cls._client)
+        monitor.start()
 
         try:
             yield run
@@ -68,7 +77,9 @@ class AutoMLFlow:
             )
         except Exception:
             end_time = datetime.now()
+
             duration = end_time - start_time
+
             error_trace = traceback.format_exc()
             logger.debug(error_trace)
             logger.debug(f"{run.id=} ended with {duration=}")
@@ -79,7 +90,10 @@ class AutoMLFlow:
                 duration=duration.total_seconds(),
                 traceback=error_trace,
             )
+
             raise
+        finally:
+            monitor.finish()
 
     @classmethod
     def log_metric(cls, key: str, value: float) -> None:

@@ -95,7 +95,7 @@ class BaseClient:
         data = resp.json()
 
         if not model:
-            return data # type: ignore
+            return data  # type: ignore
 
         type_adapted_model = TypeAdapter(model)
 

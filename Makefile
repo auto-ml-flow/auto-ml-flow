@@ -4,6 +4,6 @@ lint:
 	poetry run isort --check .
 
 format:
-	poetry run ruff format .
 	poetry run isort .
+	poetry run ruff format .
 	poetry run ruff check --fix .
