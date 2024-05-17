@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 from auto_ml_flow.client.v1.consts import Status
@@ -16,11 +17,11 @@ class RunModel(BaseModel):
 
 class CreateRunPayload(BaseModel):
     experiment: int
-    description: str | None = None 
+    description: str | None = None
 
 
 class PatchRunPayload(BaseModel):
     status: Status
     duration: float | None = None
     traceback: str | None = None
-    description: str | None = None 
+    description: str | None = None

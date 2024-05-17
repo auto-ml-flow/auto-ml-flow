@@ -6,10 +6,7 @@ from sklearn import datasets
 from sklearn.metrics import accuracy_score, log_loss
 from sklearn.model_selection import train_test_split
 
-from auto_ml_flow.client import v1
-from auto_ml_flow.experiments import experiment_manager
-from auto_ml_flow.run_metrics import add_metric_to
-from auto_ml_flow.runs import run_manager
+from auto_ml_flow import AutoMLFlow
 
 mpl.use("Agg")
 
@@ -48,46 +45,44 @@ def main():
     dtrain = xgb.DMatrix(X_train, label=y_train)
     dtest = xgb.DMatrix(X_test, label=y_test)
 
-    client = v1.AutoMLFlowClient(base_url="http://87.242.117.47:8811") # public deployment
+    AutoMLFlow.set_tracking_url("http://87.242.117.47:8811")
+    
+    with AutoMLFlow.experiment_manager("My experiment for test") as experiment:
+        with AutoMLFlow.run_manager(experiment, description=f"Some shit happens here???"):
+            # Train model and track evaluation metrics
+            params = {
+                "objective": "multi:softprob",
+                "num_class": 3,
+                "learning_rate": args.learning_rate,
+                "eval_metric": "mlogloss",
+                "colsample_bytree": args.colsample_bytree,
+                "subsample": args.subsample,
+                "seed": 42,
+            }
+            eval_results = {} # Dictionary to store evaluation results
+            model = xgb.train(
+                params,
+                dtrain,
+                evals=[(dtrain, "train"), (dtest, "test")],
+                evals_result=eval_results,  # Store evaluation results during training
+            )
 
-    with experiment_manager(client, "My experiment for test") as experiment:
-        for seed in [1, 2, 34, 42]:
-            with run_manager(client, experiment, description=f"Run with custom seed {seed}") as run:
-                # Train model and track evaluation metrics
-                params = {
-                    "objective": "multi:softprob",
-                    "num_class": 3,
-                    "learning_rate": args.learning_rate,
-                    "eval_metric": "mlogloss",
-                    "colsample_bytree": args.colsample_bytree,
-                    "subsample": args.subsample,
-                    "seed": seed,
-                }
-                eval_results = {}  # Dictionary to store evaluation results
-                model = xgb.train(
-                    params,
-                    dtrain,
-                    evals=[(dtrain, "train"), (dtest, "test")],
-                    evals_result=eval_results,  # Store evaluation results during training
-                )
+            # Extract log loss values at each step from eval_results
+            log_loss_values = eval_results["test"]["mlogloss"]
 
-                # Extract log loss values at each step from eval_results
-                log_loss_values = eval_results["test"]["mlogloss"]
+            # Log log loss at each step
+            for loss in log_loss_values:
+                AutoMLFlow.log_metric("log_loss", float(loss))
 
-                # Log log loss at each step
-                for loss in log_loss_values:
-                    add_metric_to(run, "log_loss", float(loss), client)
+            # Predict on the test set
+            y_proba = model.predict(dtest)
+            y_pred = y_proba.argmax(axis=1)
+            loss = log_loss(y_test, y_proba)
+            acc = accuracy_score(y_test, y_pred)
 
-                # Predict on the test set
-                y_proba = model.predict(dtest)
-                y_pred = y_proba.argmax(axis=1)
-                loss = log_loss(y_test, y_proba)
-                acc = accuracy_score(y_test, y_pred)
-
-                # Add final evaluation metrics to the run
-                add_metric_to(run, "seed", float(seed), client)
-                add_metric_to(run, "log_loss", float(loss), client)
-                add_metric_to(run, "accuracy", float(acc), client)
+            # Add final evaluation metrics to the run
+            AutoMLFlow.log_metric("log_loss", loss)
+            AutoMLFlow.log_metric("accuracy", acc)
 
 
 if __name__ == "__main__":

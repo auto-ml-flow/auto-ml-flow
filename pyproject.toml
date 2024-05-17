@@ -16,6 +16,10 @@ loguru = "^0.7.2"
 pytest = "^8.2.0"
 requests-mock = "^1.12.1"
 ipykernel = "^6.29.4"
+ruff = "^0.4.4"
+mypy = "^1.10.0"
+isort = "^5.13.2"
+types-requests = "^2.31.0.20240406"
 
 [tool.poetry.group.for_example.dependencies]
 numpy = "^1.26.4"
@@ -26,6 +30,94 @@ scikit-learn = "^1.4.2"
 matplotlib = "^3.8.4"
 seaborn = "^0.13.2"
 mlflow = "^2.12.2"
+
+[tool.mypy]
+plugins = "pydantic.mypy"
+ignore_missing_imports = true
+exclude = [
+    'tmp/.*',
+    'tests/.*',
+    'venv',
+    '.venv',
+    '.*/migrations/.*',
+]
+
+[tool.isort]
+profile = "black"
+extend_skip = ["migrations"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = [ "xgb_train_example.py" ]
+
+[tool.ruff.lint]
+extend-select = [
+    # pycodestyle
+    "E",
+    "W",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # pylint
+    "PL",
+    # mccabe
+    "C901",
+    # flake8-return
+    "RET",
+    # pep8-naming
+    "N",
+    # flake8-annotations
+    "ANN",
+    # flake8-async
+    "ASYNC",
+    # flake8-bandit
+    "S",
+    # flake8-blind-except
+    "BLE",
+    # flake8-boolean-trap
+    "FBT",
+    # flake8-builtins
+    "A",
+    # flake8-comprehensions
+    "C4",
+    # flake8-logging-format
+    "G",
+    # flake8-pie
+    "PIE",
+    # flake8-print
+    "T20",
+    # flake8-pytest-style
+    "PT",
+    # flake8-self
+    "SLF",
+    # flake8-type-checking
+    "TCH",
+    # flake8-unused-arguments
+    "ARG",
+    # flake8-use-pathlib
+    "PTH",
+    # flake8-todos
+    "TD",
+    # flake8-fixme
+    "FIX",
+    # eradicate
+    "ERA",
+    # perflint
+    "PERF",
+    # Ruff-specific rules
+    "RUF",
+]
+ignore = ["ANN101", "ANN102", "PLR0913", "RUF002", "RUF003", "S301", "FBT001", "FBT002", "RUF012"]
+allowed-confusables = [
+    "у", "е", "г", "х", "а", "р", "о", "с", "б", "У", "К", "Е", "Н", "З", "Х", "В", "А", "Р", "О", "С", "М", "Т", "Ь"
+]
 
 [build-system]
 requires = ["poetry-core"]

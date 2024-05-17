@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -8,6 +9,7 @@ class RunMetric(BaseModel):
     created_at: datetime
     updated_at: datetime
     run: int
+
 
 class CreateRunMetricPayload(BaseModel):
     key: str
