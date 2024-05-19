@@ -12,8 +12,14 @@ def get_system() -> SystemInfoModel:
     load_avg_last_min, load_avg_last_5_min, load_avg_last_15_min = os.getloadavg()
     swap = psutil.swap_memory()
     virtual_memory = psutil.virtual_memory()
-    ram, ram_available = bytes_to_megabytes(virtual_memory.total, to_int=True), bytes_to_megabytes(virtual_memory.available, to_int=True)
-    swap_total, swap_available = bytes_to_megabytes(swap.total, to_int=True), bytes_to_megabytes(swap.free, to_int=True)
+    ram, ram_available = (
+        bytes_to_megabytes(virtual_memory.total, to_int=True),
+        bytes_to_megabytes(virtual_memory.available, to_int=True),
+    )
+    swap_total, swap_available = (
+        bytes_to_megabytes(swap.total, to_int=True),
+        bytes_to_megabytes(swap.free, to_int=True),
+    )
 
     return SystemInfoModel(
         cpu_name=cpu_name,

@@ -1,6 +1,8 @@
 from requests import Session
 
 from auto_ml_flow.client.base import BaseClient
+from auto_ml_flow.client.v1.api.param_metrics import ParamsMetricsClient
+from auto_ml_flow.client.v1.api.result_metrics import ResultMetricsClient
 from auto_ml_flow.client.v1.api.run_metrics import RunMetricsClient
 from auto_ml_flow.client.v1.models.runs import (
     CreateRunPayload,
@@ -14,6 +16,8 @@ class RunsClient(BaseClient):
         super().__init__(base_url, session)
 
         self.metrics = RunMetricsClient(base_url, session=session)
+        self.params = ParamsMetricsClient(base_url, session=session)
+        self.results = ResultMetricsClient(base_url, session=session)
 
     DEFAULT_PREFIX = "/api/v1/runs"
 

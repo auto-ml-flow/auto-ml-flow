@@ -4,12 +4,14 @@ import abc
 
 from auto_ml_flow.client.v1 import AutoMLFlowClient
 
-def bytes_to_megabytes(bytes_value: float, to_int = False):
+
+def bytes_to_megabytes(bytes_value: float, to_int=False):
     result = bytes_value / (1024 * 1024)
     if to_int:
         return int(result)
-    
+
     return result
+
 
 class BaseMetricsMonitor(abc.ABC):
     """Base class of system metrics monitor."""

@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import IO, Any, Dict, Optional, Type, TypeVar
 from urllib.parse import urljoin
 
 import requests
@@ -47,6 +47,7 @@ class BaseClient:
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
+        files: Optional[Dict[str, tuple[str, IO]]] = None,
         stream: bool = False,
         timeout: int = 100,
     ) -> requests.Response:
@@ -56,7 +57,14 @@ class BaseClient:
         url = urljoin(self.base_url, path)  # Объединить базовый URL и путь
 
         resp = self.session.request(
-            method, url, params=params, json=json, data=data, stream=stream, timeout=timeout
+            method,
+            url,
+            params=params,
+            json=json,
+            data=data,
+            stream=stream,
+            files=files,
+            timeout=timeout,
         )
         resp.raise_for_status()
 
@@ -70,9 +78,12 @@ class BaseClient:
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
+        files: Optional[Dict[str, tuple[str, IO]]] = None,
     ) -> T:
         try:
-            resp = self._request(path, method=method, params=params, json=json, data=data)
+            resp = self._request(
+                path, method=method, params=params, json=json, data=data, files=files
+            )
             resp.raise_for_status()
 
         except (requests.exceptions.ConnectionError, RetryError) as err:
@@ -115,8 +126,11 @@ class BaseClient:
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
+        files: Optional[Dict[str, tuple[str, IO]]] = None,
     ) -> T:
-        return self._make_request(path, "POST", model, params=params, json=json, data=data)
+        return self._make_request(
+            path, "POST", model=model, params=params, json=json, data=data, files=files
+        )
 
     def _put(
         self,
@@ -126,8 +140,11 @@ class BaseClient:
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
+        files: Optional[Dict[str, IO]] = None,
     ) -> T:
-        return self._make_request(path, "PUT", model, params=params, json=json, data=data)
+        return self._make_request(
+            path, "PUT", model=model, params=params, json=json, data=data, files=files
+        )
 
     def _patch(
         self,
@@ -137,8 +154,11 @@ class BaseClient:
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
         data: Optional[Dict[str, Any]] = None,
+        files: Optional[Dict[str, IO]] = None,
     ) -> T:
-        return self._make_request(path, "PATCH", model, params=params, json=json, data=data)
+        return self._make_request(
+            path, "PATCH", model, params=params, json=json, data=data, files=files
+        )
 
     def _delete(
         self, path: str, *, model: Optional[Type[T]] = None, params: Optional[Dict[str, Any]] = None

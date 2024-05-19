@@ -11,7 +11,7 @@ from auto_ml_flow.metrics.monitor.network import NetworkMonitor
 
 
 class SystemMetricsMonitor:
-    def __init__(self, system: int, client: AutoMLFlowClient, interval: int = 1) -> None:
+    def __init__(self, system: int, client: AutoMLFlowClient, interval: int = 10) -> None:
         """
         Initialize the system metrics monitor.
 
