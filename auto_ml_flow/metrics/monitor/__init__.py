@@ -56,12 +56,10 @@ class SystemMetricsMonitor:
             logger.warning("System metrics monitoring is not running.")
             return
 
-        logger.debug("Stopping system metrics monitoring...")
         self._shutdown_event.set()
 
         try:
             self._process.join()
-            logger.debug("Successfully terminated system metrics monitoring!")
         except Exception as e:  # noqa: BLE001
             logger.error(f"Error terminating system metrics monitoring process: {e}.")
 

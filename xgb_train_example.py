@@ -59,6 +59,9 @@ def main():
     AutoMLFlow.start_experiment(name="Dataset maining", description=description)
     
     with AutoMLFlow.start_run("Test123"):
+        n_samples, n_features = X.shape
+        AutoMLFlow.log_dataset(n_features, n_samples, X)
+        AutoMLFlow.predict_training_time()
         # Define model parameters
         params = {
             "objective": "multi:softprob",
@@ -96,8 +99,6 @@ def main():
         # Log final evaluation metrics and dataset details
         AutoMLFlow.log_result("log_loss", loss)
         AutoMLFlow.log_result("accuracy", acc)
-        n_samples, n_features = X.shape
-        AutoMLFlow.log_dataset(n_features, n_samples, X)
 
 if __name__ == "__main__":
     main()
