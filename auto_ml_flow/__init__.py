@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from auto_ml_flow.client.exceptions import ClientServerError
 from auto_ml_flow.client.v1 import AutoMLFlowClient
 from auto_ml_flow.client.v1.consts import Status
 from auto_ml_flow.client.v1.models.experiments import ExperimentModel
@@ -70,7 +71,7 @@ class AutoMLFlow:
         run = run_started(
             client=cls._client, experiment_id=cls._experiment.id, description=description
         )
-        
+
         start_time = datetime.now()
         cls._latest_run = run
 
@@ -89,7 +90,7 @@ class AutoMLFlow:
                 run_id=run.id,
                 status=Status.DONE,
                 duration=duration.total_seconds(),
-                predicted_time=cls._predicted_time
+                predicted_time=cls._predicted_time,
             )
         except Exception:
             end_time = datetime.now()
@@ -103,7 +104,7 @@ class AutoMLFlow:
                 status=Status.FAILED,
                 duration=duration.total_seconds(),
                 traceback=error_trace,
-                predicted_time=cls._predicted_time
+                predicted_time=cls._predicted_time,
             )
 
             raise
@@ -196,11 +197,12 @@ class AutoMLFlow:
             dataset_n_samples=cls._n_samples,
             dataset_n_features=cls._n_features,
         )
-        cls._predicted_time = cls._client.meta_algos.predict(features)
-        
-        logger.info(
-            f"The current launch will be pre-completed after: {cls._predicted_time}"
-        )
+        try:
+            cls._predicted_time = cls._client.meta_algos.predict(features)
+        except ClientServerError:
+            logger.warning("To less data for predict training time!")
+        else:
+            logger.info(f"The current launch will be pre-completed after: {cls._predicted_time}")
 
     @classmethod
     def log_dataset(cls, n_features: int, n_samples: int, file: Any) -> None:

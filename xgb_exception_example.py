@@ -45,7 +45,7 @@ def main():
     dtrain = xgb.DMatrix(X_train, label=y_train)
     dtest = xgb.DMatrix(X_test, label=y_test)
 
-    AutoMLFlow.set_tracking_url("http://localhost:8000/")
+    AutoMLFlow.set_tracking_url("https://87.242.117.47/")
     AutoMLFlow.start_experiment("really many metrics")
 
     with AutoMLFlow.start_run("Test123"):

@@ -55,7 +55,7 @@ def main():
     dtest = xgb.DMatrix(X_test, label=y_test)
 
     # Set up AutoMLFlow for tracking the experiment
-    AutoMLFlow.set_tracking_url("http://localhost:8000/")
+    AutoMLFlow.set_tracking_url("https://87.242.117.47/")
     AutoMLFlow.start_experiment(name="Dataset maining", description=description)
     
     with AutoMLFlow.start_run("Test123"):

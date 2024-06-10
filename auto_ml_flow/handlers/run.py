@@ -27,13 +27,15 @@ def run_ended(
     duration: float,
     client: AutoMLFlowClient,
     traceback: str | None = None,
-    predicted_time: float | None = None
+    predicted_time: float | None = None,
 ) -> RunModel:
     payload = PatchRunPayload(status=status, duration=duration, traceback=traceback)
 
-    logger.info(f"The launch has been completed with status {status}. The duration was: {duration} seconds")
-    
+    logger.info(
+        f"The launch has been completed with status {status}. The duration was: {duration} seconds"
+    )
+
     if predicted_time:
         logger.info(f"Prediction error was: {abs(predicted_time.duration - duration)} seconds")
-    
+
     return client.runs.patch(id_=run_id, run=payload)

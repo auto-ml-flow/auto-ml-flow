@@ -40,7 +40,7 @@ def main():
     X_train = X_train.reshape(-1, 28 * 28) / 255.0
     X_test = X_test.reshape(-1, 28 * 28) / 255.0
 
-    AutoMLFlow.set_tracking_url("http://localhost:8000/")
+    AutoMLFlow.set_tracking_url("https://87.242.117.47/")
     AutoMLFlow.start_experiment("MNIST Classification")
 
     with AutoMLFlow.start_run("Keras_MNIST"):

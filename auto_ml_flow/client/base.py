@@ -3,6 +3,7 @@ from typing import IO, Any, Dict, Optional, Type, TypeVar
 from urllib.parse import urljoin
 
 import requests
+import urllib3
 from pydantic import TypeAdapter, ValidationError
 from tenacity import (
     RetryError,
@@ -22,6 +23,8 @@ from auto_ml_flow.client.exceptions import (
 )
 
 T = TypeVar("T")
+
+urllib3.disable_warnings(category=urllib3.exceptions.InsecureRequestWarning)
 
 
 class BaseClient:
@@ -65,6 +68,7 @@ class BaseClient:
             stream=stream,
             files=files,
             timeout=timeout,
+            verify=False,
         )
         resp.raise_for_status()
 
